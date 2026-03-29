@@ -50,6 +50,7 @@ class Config:
 
     # --- Logging / checkpoints ---
     tensorboard_root: str = "./runs"
+    # Roughly every N *simulator* timesteps (train.py converts for SB3 VecEnv semantics).
     checkpoint_freq: int = 50_000
     model_path: str = "./models/ppo_doom.zip"
 

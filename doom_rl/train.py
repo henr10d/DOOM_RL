@@ -78,13 +78,21 @@ def main() -> None:
 
     checkpoint_dir = os.path.join(os.path.dirname(cfg.model_path) or ".", "checkpoints")
     os.makedirs(checkpoint_dir, exist_ok=True)
+    # SB3 counts VecEnv.step() calls, not raw timesteps; each call advances all n_envs envs.
+    # So to save about every `checkpoint_freq` timesteps: save_freq ≈ checkpoint_freq // n_envs.
+    save_freq = max(cfg.checkpoint_freq // max(cfg.n_envs, 1), 1)
     checkpoint_cb = CheckpointCallback(
-        save_freq=cfg.checkpoint_freq,
+        save_freq=save_freq,
         save_path=checkpoint_dir,
         name_prefix="ppo_doom",
+        verbose=2,
     )
 
     print(f"Training PPO for {cfg.total_timesteps} timesteps...")
+    print(
+        f"Checkpoints about every ~{cfg.checkpoint_freq} timesteps "
+        f"(VecEnv save_freq={save_freq}, i.e. every {save_freq} parallel steps)"
+    )
     print(f"Observation space: {vec_env.observation_space}")
     print(f"TensorBoard: {log_dir}")
 
